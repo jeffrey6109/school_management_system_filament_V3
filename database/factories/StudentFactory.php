@@ -17,8 +17,16 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'student_id' => 'STD-'.strtoupper(uniqid()),
+            'date_of_birth' => fake()->date(),
+            'gender' =>  'Male',
+            'nationality' => 'Malaysian',
+            'ic_no' => uniqid(12),
+            'home_phone' => fake()->phoneNumber(),
+            'mobile_phone' => fake()->phoneNumber(),
+            'email' => fake()->unique()->email(),
             'address_1' => fake()->streetAddress(),
             'address_2' => fake()->country(),
         ];
