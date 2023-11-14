@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('last_name');
             $table->date('date_of_birth');
             $table->string('gender');
+            $table->string('status');
+            $table->string('race');
+            $table->string('religion');
             $table->string('nationality');
             $table->string('ic_no');
             $table->string('address_1');

@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Gender;
+use App\Enums\Race;
+use App\Enums\Religion;
+use App\Enums\Status;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource\RelationManagers;
 use App\Models\Student;
@@ -11,6 +15,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,6 +24,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -48,18 +54,27 @@ class StudentResource extends Resource
                             ->maxLength(255)
                             ->required(),
                         Radio::make('gender')
-                            ->options([
-                                'Male' => 'Male',
-                                'Female' => 'Female',
-                            ])
+                            ->options(Gender::class)
                             ->required(),
                         DatePicker::make('date_of_birth')
                             ->format('j M, Y')
                             ->native(false)
                             ->required(),
+                        Select::make('race')
+                            ->options(Race::class)
+                            ->native(false)
+                            ->required(),
+                        Select::make('religion')
+                            ->options(Religion::class)
+                            ->native(false)
+                            ->required(),
                         TextInput::make('nationality')
                             ->required(),
                         TextInput::make('ic_no')
+                            ->required(),
+                        Select::make('status')
+                            ->options(Status::class)
+                            ->native(false)
                             ->required(),
                     ])->columns(2),
 
@@ -97,21 +112,29 @@ class StudentResource extends Resource
                         ->sortable(),
                     TextColumn::make('gender')
                         ->sortable()
-                        ->badge()
-                        ->color(fn (string $state): string => match ($state) {
-                            'Female' => 'danger',
-                            'Male' => 'primary',
-                        }),
+                        ->badge(),
                     TextColumn::make('date_of_birth')
                         ->date('j M, Y')
                         ->sortable(),
                     TextColumn::make('ic_no')
                         ->searchable()
                         ->toggleable(isToggledHiddenByDefault: false),
+                    TextColumn::make('race')
+                        ->sortable()
+                        ->searchable()
+                        ->toggleable(isToggledHiddenByDefault: false),
+                    TextColumn::make('religion')
+                        ->sortable()
+                        ->searchable()
+                        ->toggleable(isToggledHiddenByDefault: true),
                     TextColumn::make('nationality')
                         ->sortable()
                         ->searchable()
                         ->toggleable(isToggledHiddenByDefault: true),
+                    TextColumn::make('status')
+                        ->sortable()
+                        ->badge()
+                        ->toggleable(isToggledHiddenByDefault: false),
                     TextColumn::make('email')
                         ->searchable()
                         ->toggleable(isToggledHiddenByDefault: true),
@@ -127,7 +150,14 @@ class StudentResource extends Resource
                         ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('gender')
+                    ->options(Gender::class),
+                SelectFilter::make('race')
+                    ->options(Race::class),
+                SelectFilter::make('religion')
+                    ->options(Religion::class),
+                SelectFilter::make('status')
+                    ->options(Status::class),
             ])
             ->actions([
                 ActionGroup::make([
