@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         \App\Models\User::factory()->create([
             'name' => 'admin',
             'email' => 'admin@admin.com',
-            'password' => password_hash('admin1234', PASSWORD_DEFAULT)
+            'password' => password_hash('admin1234', PASSWORD_DEFAULT),
         ]);
 
         Student::factory(10)->create();

@@ -21,7 +21,7 @@ class StudentFactory extends Factory
             'last_name' => fake()->lastName(),
             'student_id' => 'STD-'.strtoupper(uniqid()),
             'date_of_birth' => fake()->date(),
-            'gender' =>  'male',
+            'gender' => 'male',
             'nationality' => 'Malaysian',
             'Religion' => 'christian',
             'Race' => 'chinese',

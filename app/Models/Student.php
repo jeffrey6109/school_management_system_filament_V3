@@ -36,6 +36,6 @@ class Student extends Model
         'address_2',
         'home_phone',
         'mobile_phone',
-        'email'
+        'email',
     ];
 }

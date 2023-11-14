@@ -11,6 +11,7 @@ enum Race: string implements HasLabel
     case Indian = 'indian';
     case Bumiputra = 'bumiputra';
     case Other = 'other';
+
     public function getLabel(): ?string
     {
         return $this->name;
