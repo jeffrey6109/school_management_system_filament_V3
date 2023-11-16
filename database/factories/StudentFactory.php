@@ -32,6 +32,7 @@ class StudentFactory extends Factory
             'email' => fake()->unique()->email(),
             'address_1' => fake()->streetAddress(),
             'address_2' => fake()->country(),
+            'standard_id' => 1,
         ];
     }
 }

@@ -14,12 +14,17 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\GlobalSearch\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class StudentResource extends Resource
 {
@@ -28,6 +33,8 @@ class StudentResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
     protected static ?string $activeNavigationIcon = 'heroicon-s-academic-cap';
+
+    protected static ?string $recordTitleAttribute = 'first_name';
 
     public static function form(Form $form): Form
     {
@@ -68,6 +75,10 @@ class StudentResource extends Resource
                             ->options(Status::class)
                             ->native(false)
                             ->required(),
+                        Select::make('standard_id')
+                            ->required()
+                            ->native(false)
+                            ->relationship('standard', 'name'),
                     ])->columns(2),
 
                 Section::make('Contact details')
@@ -94,6 +105,9 @@ class StudentResource extends Resource
             ->defaultSort('first_name')
             ->columns([
                 TextColumn::make('student_id')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('standard.name')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('first_name')
@@ -141,7 +155,10 @@ class StudentResource extends Resource
                 TextColumn::make('address_2')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+
             ->filters([
+                SelectFilter::make('Standard')
+                    ->relationship('standard','name'),
                 SelectFilter::make('gender')
                     ->options(Gender::class),
                 SelectFilter::make('race')
@@ -150,7 +167,8 @@ class StudentResource extends Resource
                     ->options(Religion::class),
                 SelectFilter::make('status')
                     ->options(Status::class),
-            ])
+            ], layout: FiltersLayout::Modal)->filtersFormColumns(2)
+
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make()
@@ -160,6 +178,7 @@ class StudentResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                 ]),
             ])
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -178,8 +197,24 @@ class StudentResource extends Resource
     {
         return [
             'index' => Pages\ListStudents::route('/'),
-            'create' => Pages\CreateStudent::route('/create'),
-            'edit' => Pages\EditStudent::route('/{record}/edit'),
         ];
     }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Student ID' => $record->student_id,
+            'Name' => $record->first_name . ' ' . $record->last_name,
+            'Standard' => $record->standard->name
+        ];
+    }
+
+    public static function getGlobalSearchResultActions(Model $record): array
+{
+    return [
+        Action::make('view')
+            ->icon('heroicon-s-eye')
+            ->url(static::getUrl('view', ['record' => $record])),
+    ];
+}
 }
