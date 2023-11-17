@@ -2,6 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Enums\Gender;
+use App\Enums\Race;
+use App\Enums\Religion;
+use App\Enums\Status;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,15 +21,14 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
-            'first_name' => fake()->firstName(),
-            'last_name' => fake()->lastName(),
+            'name' => fake()->Name(),
             'student_id' => 'STD-'.strtoupper(uniqid()),
             'date_of_birth' => fake()->date(),
-            'gender' => 'male',
+            'gender' => fake()->randomElement(Gender::getValues()),
             'nationality' => 'Malaysian',
-            'Religion' => 'christian',
-            'Race' => 'chinese',
-            'status' => 'AS',
+            'Religion' => fake()->randomElement(Religion::getValues()),
+            'Race' => fake()->randomElement(Race::getValues()),
+            'status' => fake()->randomElement(Status::getValues()),
             'ic_no' => uniqid(12),
             'home_phone' => fake()->phoneNumber(),
             'mobile_phone' => fake()->phoneNumber(),

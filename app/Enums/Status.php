@@ -17,6 +17,11 @@ enum Status: string implements HasColor, HasLabel
     case Inactive = 'IS';
     case Inactive_Withdrew = 'IW';
 
+    public static function getValues(): array
+    {
+        return array_column(Status::cases(), 'value');
+    }
+
     public function getLabel(): ?string
     {
         return $this->name;

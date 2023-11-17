@@ -12,6 +12,11 @@ enum Race: string implements HasLabel
     case Bumiputra = 'bumiputra';
     case Other = 'other';
 
+    public static function getValues(): array
+    {
+        return array_column(Race::cases(), 'value');
+    }
+
     public function getLabel(): ?string
     {
         return $this->name;

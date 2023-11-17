@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Student;
+use App\Models\Guardian;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,7 +22,9 @@ class DatabaseSeeder extends Seeder
             'password' => password_hash('admin1234', PASSWORD_DEFAULT),
         ]);
 
-        Student::factory(10)->create();
+        Student::factory(10)
+            ->has(Guardian::factory()->count(3))
+            ->create();
 
         $this->call(StandardSeeder::class);
     }

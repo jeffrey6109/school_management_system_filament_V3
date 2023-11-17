@@ -10,6 +10,11 @@ enum Gender: string implements HasColor, HasLabel
     case Male = 'male';
     case Female = 'female';
 
+    public static function getValues(): array
+    {
+        return array_column(Gender::cases(), 'value');
+    }
+
     public function getLabel(): ?string
     {
         return $this->name;

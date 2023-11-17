@@ -10,6 +10,7 @@ use App\Models\Standard;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Student extends Model
 {
@@ -25,8 +26,7 @@ class Student extends Model
 
     protected $fillable = [
         'student_id',
-        'first_name',
-        'last_name',
+        'name',
         'date_of_birth',
         'gender',
         'religion',
@@ -45,5 +45,10 @@ class Student extends Model
     public function standard(): BelongsTo
     {
         return $this->belongsTo(Standard::class);
+    }
+
+    public function guardians(): BelongsToMany
+    {
+        return $this->belongsToMany(Guardian::class);
     }
 }

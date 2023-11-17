@@ -6,7 +6,10 @@ use App\Enums\Gender;
 use App\Enums\Race;
 use App\Enums\Religion;
 use App\Enums\Status;
+use App\Events\DemoteStudent;
+use App\Events\PromoteStudent;
 use App\Filament\Resources\StudentResource\Pages;
+use App\Filament\Resources\StudentResource\RelationManagers;
 use App\Models\Student;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
@@ -20,10 +23,10 @@ use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class StudentResource extends Resource
@@ -34,7 +37,7 @@ class StudentResource extends Resource
 
     protected static ?string $activeNavigationIcon = 'heroicon-s-academic-cap';
 
-    protected static ?string $recordTitleAttribute = 'first_name';
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
     {
@@ -46,10 +49,7 @@ class StudentResource extends Resource
                             ->default('STD-'.strtoupper(uniqid()))
                             ->readonly(true)
                             ->required(),
-                        TextInput::make('first_name')
-                            ->maxLength(255)
-                            ->required(),
-                        TextInput::make('last_name')
+                        TextInput::make('name')
                             ->maxLength(255)
                             ->required(),
                         Radio::make('gender')
@@ -102,7 +102,7 @@ class StudentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('first_name')
+            ->defaultSort('name')
             ->columns([
                 TextColumn::make('student_id')
                     ->searchable()
@@ -110,10 +110,7 @@ class StudentResource extends Resource
                 TextColumn::make('standard.name')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('first_name')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('last_name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('gender')
@@ -158,21 +155,43 @@ class StudentResource extends Resource
 
             ->filters([
                 SelectFilter::make('Standard')
+                    ->native(false)
                     ->relationship('standard','name'),
                 SelectFilter::make('gender')
+                     ->native(false)
                     ->options(Gender::class),
                 SelectFilter::make('race')
-                    ->options(Race::class),
+                    ->options(Race::class)
+                    ->native(false),
                 SelectFilter::make('religion')
-                    ->options(Religion::class),
+                    ->options(Religion::class)
+                    ->native(false),
                 SelectFilter::make('status')
-                    ->options(Status::class),
+                    ->options(Status::class)
+                    ->native(false),
             ], layout: FiltersLayout::Modal)->filtersFormColumns(2)
 
             ->actions([
+                Tables\Actions\Action::make('Promote')
+                    ->action(function(Student $record) {
+                        $record->standard_id = $record->standard_id + 1;
+                        $record->save();
+                    })
+                    ->requiresConfirmation()
+                    ->color('success')
+                    ->icon('heroicon-o-chevron-up'),
+                Tables\Actions\Action::make('Demote')
+                    ->action(function(Student $record) {
+                        if($record->standard_id > 1) {
+                            $record->standard_id = $record->standard_id - 1;
+                            $record->save();
+                        }
+                    })
+                    ->requiresConfirmation()
+                    ->color('danger')
+                    ->icon('heroicon-o-chevron-down'),
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make()
-                        ->color('info'),
+                    Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make()
                         ->color('warning'),
                     Tables\Actions\DeleteAction::make(),
@@ -181,6 +200,28 @@ class StudentResource extends Resource
 
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('Promote Selected')
+                        ->action(function(Collection $records) {
+                            $records->each(function ($record) {
+                                event(new PromoteStudent($record));
+                            });
+                        })
+                        ->requiresConfirmation()
+                        ->deselectRecordsAfterCompletion()
+                        ->color('success')
+                        ->icon('heroicon-o-chevron-double-up'),
+                    Tables\Actions\BulkAction::make('Demote Selected')
+                        ->action(function(Collection $records) {
+                            $records->each(function ($record) {
+                                if($record->standard_id > 1) {
+                                    event(new DemoteStudent($record));
+                                }
+                            });
+                        })
+                        ->requiresConfirmation()
+                        ->deselectRecordsAfterCompletion()
+                        ->color('danger')
+                        ->icon('heroicon-o-chevron-double-down'),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
@@ -189,7 +230,7 @@ class StudentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+           RelationManagers\GuardiansRelationManager::class,
         ];
     }
 
@@ -197,6 +238,8 @@ class StudentResource extends Resource
     {
         return [
             'index' => Pages\ListStudents::route('/'),
+            'create' => Pages\CreateStudent::route('/create'),
+            'edit' => Pages\EditStudent::route('/{record}/edit'),
         ];
     }
 
@@ -204,7 +247,7 @@ class StudentResource extends Resource
     {
         return [
             'Student ID' => $record->student_id,
-            'Name' => $record->first_name . ' ' . $record->last_name,
+            'Name' => $record->name ,
             'Standard' => $record->standard->name
         ];
     }
@@ -214,7 +257,7 @@ class StudentResource extends Resource
     return [
         Action::make('view')
             ->icon('heroicon-s-eye')
-            ->url(static::getUrl('view', ['record' => $record])),
+            ->url(static::getUrl('index')),
     ];
 }
 }
