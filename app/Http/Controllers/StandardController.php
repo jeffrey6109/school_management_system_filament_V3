@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Standard;
 use App\Http\Requests\StoreStandardRequest;
 use App\Http\Requests\UpdateStandardRequest;
+use App\Models\Standard;
 
 class StandardController extends Controller
 {

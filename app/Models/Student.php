@@ -6,11 +6,11 @@ use App\Enums\Gender;
 use App\Enums\Race;
 use App\Enums\Religion;
 use App\Enums\Status;
-use App\Models\Standard;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
 {
@@ -22,6 +22,7 @@ class Student extends Model
         'religion' => Religion::class,
         'race' => Race::class,
         'status' => Status::class,
+        'vitals' => 'json',
     ];
 
     protected $fillable = [
@@ -40,6 +41,7 @@ class Student extends Model
         'mobile_phone',
         'email',
         'standard_id',
+        'vitals',
     ];
 
     public function standard(): BelongsTo
@@ -50,5 +52,10 @@ class Student extends Model
     public function guardians(): BelongsToMany
     {
         return $this->belongsToMany(Guardian::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(CertificateStudent::class);
     }
 }

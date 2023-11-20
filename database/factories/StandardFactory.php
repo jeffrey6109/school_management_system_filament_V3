@@ -18,7 +18,7 @@ class StandardFactory extends Factory
     {
         return [
             'name' => fake()->word(),
-            'class_number' => fake()->numberBetween(1,10),
+            'class_number' => fake()->numberBetween(1, 10),
         ];
     }
 }

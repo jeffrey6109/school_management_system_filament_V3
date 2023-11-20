@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('home_phone')->nullable();
             $table->string('mobile_phone');
             $table->string('email')->unique();
+            $table->json('vitals')->nullable();
             $table->timestamps();
         });
     }

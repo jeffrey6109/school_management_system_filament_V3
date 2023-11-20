@@ -10,12 +10,15 @@ use App\Events\DemoteStudent;
 use App\Events\PromoteStudent;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource\RelationManagers;
+use App\Models\Certificate;
 use App\Models\Student;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
 use Filament\GlobalSearch\Actions\Action;
 use Filament\Resources\Resource;
@@ -25,7 +28,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,59 +45,99 @@ class StudentResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Student details')
-                    ->schema([
-                        TextInput::make('student_id')
-                            ->default('STD-'.strtoupper(uniqid()))
-                            ->readonly(true)
-                            ->required(),
-                        TextInput::make('name')
-                            ->maxLength(255)
-                            ->required(),
-                        Radio::make('gender')
-                            ->options(Gender::class)
-                            ->required(),
-                        DatePicker::make('date_of_birth')
-                            ->format('j M, Y')
-                            ->native(false)
-                            ->required(),
-                        Select::make('race')
-                            ->options(Race::class)
-                            ->native(false)
-                            ->required(),
-                        Select::make('religion')
-                            ->options(Religion::class)
-                            ->native(false)
-                            ->required(),
-                        TextInput::make('nationality')
-                            ->required(),
-                        TextInput::make('ic_no')
-                            ->required(),
-                        Select::make('status')
-                            ->options(Status::class)
-                            ->native(false)
-                            ->required(),
-                        Select::make('standard_id')
-                            ->required()
-                            ->native(false)
-                            ->relationship('standard', 'name'),
-                    ])->columns(2),
+                Wizard::make([
+                    Step::make('Student details')
+                        ->schema([
+                            TextInput::make('student_id')
+                                ->default('STD-'.strtoupper(uniqid()))
+                                ->readonly(true)
+                                ->required(),
+                            TextInput::make('name')
+                                ->maxLength(255)
+                                ->required(),
+                            Radio::make('gender')
+                                ->options(Gender::class)
+                                ->required(),
+                            DatePicker::make('date_of_birth')
+                                ->format('j M, Y')
+                                ->native(false)
+                                ->required(),
+                            Select::make('race')
+                                ->options(Race::class)
+                                ->native(false)
+                                ->required(),
+                            Select::make('religion')
+                                ->options(Religion::class)
+                                ->native(false)
+                                ->required(),
+                            TextInput::make('nationality')
+                                ->required(),
+                            TextInput::make('ic_no')
+                                ->required(),
+                            Select::make('status')
+                                ->options(Status::class)
+                                ->native(false)
+                                ->required(),
+                        ])
+                        ->columns(2)
+                        ->icon('heroicon-o-user'),
 
-                Section::make('Contact details')
-                    ->schema([
-                        TextInput::make('home_phone')
-                            ->tel()
-                            ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
-                        TextInput::make('mobile_phone')
-                            ->tel()
-                            ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
-                        TextInput::make('email')
-                            ->email(),
-                        TextInput::make('address_1')
-                            ->required(),
-                        TextInput::make('address_2')
-                            ->required(),
-                    ])->columns(2),
+                    Step::make('Contact details')
+                        ->schema([
+                            TextInput::make('home_phone')
+                                ->tel()
+                                ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
+                            TextInput::make('mobile_phone')
+                                ->tel()
+                                ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
+                            TextInput::make('email')
+                                ->email(),
+                            TextInput::make('address_1')
+                                ->required(),
+                            TextInput::make('address_2')
+                                ->required(),
+                        ])
+                        ->columns(2)
+                        ->icon('heroicon-o-home'),
+
+                    Step::make('School')
+                        ->schema([
+                            Select::make('standard_id')
+                                ->required()
+                                ->native(false)
+                                ->relationship('standard', 'name'),
+
+                            Repeater::make('certificates')
+                                ->relationship()
+                                ->schema([
+                                    Select::make('certificate_id')
+                                        ->options(Certificate::all()->where('is_active', 1)->pluck('name', 'id'))
+                                        ->searchable()
+                                        ->required()
+                                        ->label('Certificate'),
+                                    TextInput::make('description'),
+                                ]),
+                        ])
+                        ->columns(2)
+                        ->icon('heroicon-o-academic-cap'),
+
+                    Step::make('Medical Records')
+                        ->schema([
+                            Repeater::make('vitals')
+                                ->schema([
+                                    Select::make('name')
+                                        ->options(config('sm_config.vitals'))
+                                        ->required(),
+                                    TextInput::make('value')
+                                        ->required()
+                                        ->maxLength(255),
+                                ])
+                                ->columns(2),
+                        ])
+                        ->icon('heroicon-o-plus'),
+                ])
+                    ->columnSpanFull()
+                    ->skippable(),
             ]);
     }
 
@@ -156,9 +198,9 @@ class StudentResource extends Resource
             ->filters([
                 SelectFilter::make('Standard')
                     ->native(false)
-                    ->relationship('standard','name'),
+                    ->relationship('standard', 'name'),
                 SelectFilter::make('gender')
-                     ->native(false)
+                    ->native(false)
                     ->options(Gender::class),
                 SelectFilter::make('race')
                     ->options(Race::class)
@@ -173,7 +215,7 @@ class StudentResource extends Resource
 
             ->actions([
                 Tables\Actions\Action::make('Promote')
-                    ->action(function(Student $record) {
+                    ->action(function (Student $record) {
                         $record->standard_id = $record->standard_id + 1;
                         $record->save();
                     })
@@ -181,8 +223,8 @@ class StudentResource extends Resource
                     ->color('success')
                     ->icon('heroicon-o-chevron-up'),
                 Tables\Actions\Action::make('Demote')
-                    ->action(function(Student $record) {
-                        if($record->standard_id > 1) {
+                    ->action(function (Student $record) {
+                        if ($record->standard_id > 1) {
                             $record->standard_id = $record->standard_id - 1;
                             $record->save();
                         }
@@ -201,7 +243,7 @@ class StudentResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\BulkAction::make('Promote Selected')
-                        ->action(function(Collection $records) {
+                        ->action(function (Collection $records) {
                             $records->each(function ($record) {
                                 event(new PromoteStudent($record));
                             });
@@ -211,9 +253,9 @@ class StudentResource extends Resource
                         ->color('success')
                         ->icon('heroicon-o-chevron-double-up'),
                     Tables\Actions\BulkAction::make('Demote Selected')
-                        ->action(function(Collection $records) {
+                        ->action(function (Collection $records) {
                             $records->each(function ($record) {
-                                if($record->standard_id > 1) {
+                                if ($record->standard_id > 1) {
                                     event(new DemoteStudent($record));
                                 }
                             });
@@ -230,7 +272,7 @@ class StudentResource extends Resource
     public static function getRelations(): array
     {
         return [
-           RelationManagers\GuardiansRelationManager::class,
+            RelationManagers\GuardiansRelationManager::class,
         ];
     }
 
@@ -247,17 +289,17 @@ class StudentResource extends Resource
     {
         return [
             'Student ID' => $record->student_id,
-            'Name' => $record->name ,
-            'Standard' => $record->standard->name
+            'Name' => $record->name,
+            'Standard' => $record->standard->name,
         ];
     }
 
     public static function getGlobalSearchResultActions(Model $record): array
-{
-    return [
-        Action::make('view')
-            ->icon('heroicon-s-eye')
-            ->url(static::getUrl('index')),
-    ];
-}
+    {
+        return [
+            Action::make('view')
+                ->icon('heroicon-s-eye')
+                ->url(static::getUrl('index')),
+        ];
+    }
 }

@@ -22,12 +22,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         PromoteStudent::class => [
             \App\Listeners\PromoteStudent::class,
-            \App\Listeners\SendPromotedEmail::class
+            \App\Listeners\SendPromotedEmail::class,
         ],
         DemoteStudent::class => [
             \App\Listeners\DemoteStudent::class,
-            \App\Listeners\SendDemotedEmail::class
-        ]
+            \App\Listeners\SendDemotedEmail::class,
+        ],
     ];
 
     /**

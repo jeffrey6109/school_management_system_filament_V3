@@ -3,8 +3,6 @@
 namespace App\Listeners;
 
 use App\Events\DemoteStudent;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class SendDemotedEmail
 {
@@ -21,6 +19,6 @@ class SendDemotedEmail
      */
     public function handle(DemoteStudent $event): void
     {
-        logger('Sending email to student ' . $event->student->name);
+        logger('Sending email to student '.$event->student->name);
     }
 }

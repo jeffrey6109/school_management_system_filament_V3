@@ -3,8 +3,6 @@
 namespace App\Listeners;
 
 use App\Events\DemoteStudent as EventsDemoteStudent;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class DemoteStudent
 {

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Standard;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class StandardSeeder extends Seeder
@@ -15,7 +14,7 @@ class StandardSeeder extends Seeder
     {
         $data = collect();
 
-        for ($i =1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             $data->push([
                 'name' => "Std {$i}",
                 'class_number' => $i,

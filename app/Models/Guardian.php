@@ -14,7 +14,7 @@ class Guardian extends Model
         'name',
         'ic_no',
         'contact_number',
-        'relation_type'
+        'relation_type',
     ];
 
     public function students(): BelongsToMany

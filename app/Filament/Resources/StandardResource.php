@@ -3,18 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\StandardResource\Pages;
-use App\Filament\Resources\StandardResource\RelationManagers;
 use App\Models\Standard;
-use Filament\Forms;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class StandardResource extends Resource
 {
@@ -26,15 +22,16 @@ class StandardResource extends Resource
     {
         return $form
             ->schema([
-                Section::make([
-                    TextInput::make('name')
-                        ->required()
-                        ->maxLength(10),
-                    TextInput::make('class_number')
-                        ->required()
-                        ->numeric()
-                        ->maxValue(100),
-                ])->Columns(2)
+                Repeater::make('Standard')
+                    ->schema([
+                        TextInput::make('name')
+                            ->required()
+                            ->maxLength(10),
+                        TextInput::make('class_number')
+                            ->required()
+                            ->numeric()
+                            ->maxValue(100),
+                    ])->Columns(2),
             ]);
     }
 
@@ -53,6 +50,7 @@ class StandardResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
